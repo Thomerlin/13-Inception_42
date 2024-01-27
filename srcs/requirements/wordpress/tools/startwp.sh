@@ -1,32 +1,33 @@
 #!/bin/sh
-#checks if WordPress core is installed by running the wp core is-installed command with the specified 
-#path to the WordPress installation directory. If it's not installed, the following commands are executed
+# verifica se o núcleo do WordPress está instalado executando o comando wp core is-installed com o 
+# caminho especificado para o diretório de instalação do WordPress. Se não estiver instalado, os seguintes comandos serão executados
 if ! wp core is-installed --allow-root --path=/var/www/wordpress; then
-	#downloads WordPress core files to the specified path
+	# baixa os arquivos principais do WordPress para o caminho especificado
 	wp core download --path=/var/www/html --allow-root
-	#Import env variables in the config file
+	# Importe variáveis env no arquivo de configuração
 	sed -i "s/database_name_here/$MYSQL_DATABASE/g" wp-config-sample.php
 	sed -i "s/username_here/$MYSQL_USER/g" wp-config-sample.php
 	sed -i "s/password_here/$MYSQL_PASSWORD/g" wp-config-sample.php
 	sed -i "s/localhost/$MYSQL_HOSTNAME/g" wp-config-sample.php
-	#creates a copy of the wp-config-sample.php file and renames it to wp-config.php
+	# cria uma cópia do arquivo wp-config-sample.php e o renomeia para wp-config.php
 	cp wp-config-sample.php wp-config.php
-	# installs WordPress core with the specified settings, such as the site URL, site name, and the admin user's login credentials
+	# instale o núcleo do WordPress com as configurações especificadas, 
+	# como URL do site, nome do site e credenciais de login do usuário administrador
 	wp core install --allow-root --path=/var/www/html --url=${DOMAIN_NAME} --title=${WORDPRESS_NAME} --admin_user=${WORDPRESS_ROOT_LOGIN} --admin_password=${MYSQL_ROOT_PASSWORD} --admin_email=${WORDPRESS_ROOT_EMAIL}
-	#installs and activates the Astra theme
+	# instala e ativa o tema Astra
 	wp theme install astra --activate --allow-root --path=/var/www/html
-	#uninstalls the Akismet and Hello plugins
+	# desinstala os plugins Akismet e Hello
 	wp plugin uninstall --allow-root --path=/var/www/html akismet hello
-	#updates all installed plugins
+	# atualiza todos os plugins instalados
 	wp plugin update --all --allow-root --path=/var/www/html
-	#changes the ownership of the WordPress installation directory to the www-data user and group
+	# altera a propriedade do diretório de instalação do WordPress para o usuário e grupo www-data
 	chown -R www-data:www-data /var/www/html
-	#sets the directory permissions of the WordPress installation directory to 774
+	# define as permissões do diretório de instalação do WordPress para 774
 	chmod -R 774 /var/www/html
-	# removes the downloaded WordPress core files and directories
+	# remove os arquivos e diretórios principais do WordPress baixados
 	rm -rf wordpress
 else
 	echo "wordpress already downloaded"
 fi
-#starts the PHP-FPM server in foreground mode, which listens for incoming requests and handles them
-php-fpm7.3 -F
+# inicia o servidor PHP-FPM no modo de primeiro plano, que escuta as solicitações recebidas e as trata
+php-fpm7.4 -F
