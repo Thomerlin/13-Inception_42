@@ -1,8 +1,8 @@
 SRC = cd srcs/
-DOMAIN = 127.0.0.1       tyago-ri.42.fr
-# LOOKDOMAIN = $(shell grep "${DOMAIN}" /etc/hosts)
+DOMAIN = 127.0.1.1	tyago-ri.42.fr
+LOOKDOMAIN = $(shell grep "${DOMAIN}" /etc/hosts)
 
-all: build up
+all: hosts build up
 
 build:
 	sudo mkdir -p /home/tyago-ri/data/database
@@ -15,7 +15,14 @@ rebuild:
 up:
 	${SRC} && docker-compose up -d
 
-
+hosts:
+	@if [ "${DOMAIN}" = "${LOOKDOMAIN}" ]; then \
+		echo "Host already set"; \
+	else \
+		cp /etc/hosts ./hosts_bkp; \
+		sudo rm /etc/hosts; \
+		sudo cp ./srcs/requirements/tools/hosts /etc/hosts; \
+	fi
 
 list:
 	docker ps -a
